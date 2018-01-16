@@ -13,7 +13,7 @@ module Datadog
         def initialize(app, options = {})
           super(app)
           @options = Datadog.configuration[:faraday].merge(options)
-          @tracer = Pin.get_from(::Faraday).tracer
+          @tracer = Datadog.configuration[:faraday][:tracer]
           setup_service!
         end
 

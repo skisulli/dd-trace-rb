@@ -29,7 +29,6 @@ module Datadog
             require 'ddtrace/ext/app_types'
             require 'ddtrace/contrib/faraday/middleware'
 
-            add_pin
             add_middleware
 
             @patched = true
@@ -52,15 +51,6 @@ module Datadog
             return unless defined?(::Faraday::VERSION)
 
             Gem::Version.new(::Faraday::VERSION) < COMPATIBLE_UNTIL
-          end
-
-          def add_pin
-            Pin.new(
-              get_option(:service_name),
-              app: 'faraday',
-              app_type: Ext::AppTypes::WEB,
-              tracer: get_option(:tracer)
-            ).onto(::Faraday)
           end
 
           def add_middleware
