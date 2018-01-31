@@ -115,12 +115,18 @@ class TracingControllerTest < ActionController::TestCase
     get :full
     assert_response :success
     spans = @tracer.writer.spans()
-    assert_equal(spans.length, 4)
 
-    span_database, span_request, span_cache, span_template = spans
+    if Rails.version >= '4.2'
+      assert_equal(spans.length, 5)
+      span_instantiation, span_database, span_request, span_cache, span_template = spans
+    else
+      assert_equal(spans.length, 4)
+      span_database, span_request, span_cache, span_template = spans
+    end
 
     # assert the spans
     adapter_name = get_adapter_name()
+    assert_equal(span_instantiation.name, 'active_record.instantiation') if Rails.version >= '4.2'
     assert_equal(span_cache.name, 'rails.cache')
     assert_equal(span_database.name, "#{adapter_name}.query")
     assert_equal(span_template.name, 'rails.render_template')
@@ -130,6 +136,7 @@ class TracingControllerTest < ActionController::TestCase
     assert_nil(span_request.parent)
     assert_equal(span_template.parent, span_request)
     assert_equal(span_database.parent, span_template)
+    assert_equal(span_instantiation.parent, span_template) if Rails.version >= '4.2'
     assert_equal(span_cache.parent, span_request)
   end
 
